@@ -1,11 +1,17 @@
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { Activity, ClipboardList, PackageCheck, Users, Smartphone, MapPin, Settings2 } from "lucide-react";
+import { Activity, ClipboardList, PackageCheck, Users, Smartphone, MapPin, Settings2, type LucideIcon } from "lucide-react";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin-session";
 import AdminLoginForm from "./admin-login-form";
 import AdminSignOutButton from "./admin-sign-out-button";
 
 export const dynamic = "force-dynamic";
+
+const adminNav: { label: string; Icon: LucideIcon }[] = [
+  { label: "Overview", Icon: Activity }, { label: "Applications", Icon: ClipboardList },
+  { label: "Orders", Icon: PackageCheck }, { label: "Customers", Icon: Users },
+  { label: "Phone catalogue", Icon: Smartphone }, { label: "Pickup areas", Icon: MapPin },
+  { label: "Settings", Icon: Settings2 },
+];
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
@@ -18,7 +24,7 @@ export default async function AdminPage() {
       <AdminSignOutButton/>
     </header>
     <nav style={{display:"flex",gap:9,flexWrap:"wrap",marginTop:22}}>
-      {[["Overview",Activity],["Applications",ClipboardList],["Orders",PackageCheck],["Customers",Users],["Phone catalogue",Smartphone],["Pickup areas",MapPin],["Settings",Settings2]].map(([label,Icon])=><span key={label as string} className="pill" style={{display:"inline-flex",alignItems:"center",gap:7}}>{/* @ts-expect-error Lucide icon component */}<Icon size={14}/>{label as string}</span>)}
+      {adminNav.map(({label,Icon})=><span key={label} className="pill" style={{display:"inline-flex",alignItems:"center",gap:7}}><Icon size={14}/>{label}</span>)}
     </nav>
     <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:14,marginTop:26}}>
       <article style={{border:"1px solid var(--silver)",borderRadius:9,padding:20}}><ClipboardList size={19}/><h3 style={{fontSize:14}}>Applications</h3><p style={{fontSize:12,color:"var(--gray)"}}>Waiting for the live application database connection.</p></article>
