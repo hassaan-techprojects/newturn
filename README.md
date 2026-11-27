@@ -18,7 +18,7 @@ The `production` branch of Neon project `green-wave-93924097` has Managed Better
 5. Run `npm run dev`.
 6. Visit `/auth/sign-up` to create an account, then `/auth/sign-in` and `/account` to verify sign-in and the current session.
 
-The local origin `http://localhost:3000` is allowlisted on the production branch. The branch currently uses Neon's shared email provider and does not require email verification for sign-up. Configure custom SMTP before production launch.
+The local origin `http://localhost:3000` is allowlisted on the production branch. Vercel now has the Auth base URL and server-only cookie secret configured for production, preview, and development. The branch currently uses Neon's shared email provider and does not require email verification for sign-up. Configure custom SMTP before production launch.
 
 ## Neon CLI / branch config
 The repository contains `neon.ts` with `auth: true`. From an authenticated local terminal, run:
