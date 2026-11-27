@@ -3,7 +3,7 @@ import {useCallback,useEffect,useState,type FormEvent} from "react";
 import {Activity,ClipboardList,PackageCheck,Users,Smartphone,Settings2,RefreshCw,Trash2,Edit3,Save,Search,type LucideIcon} from "lucide-react";
 import AdminSignOutButton from "./admin-sign-out-button";
 type Row={id:string;[key:string]:any};
-const calls:Record<string,string>={pending:"Pending",interested:"Interested",not_interested:"Not interested",no_response:"No response",busy:"Busy",switched_off:"Switched off"};
+const calls:Record<string,string>={pending:"Pending",interested:"Interested",not_interested:"Not interested",no_response:"No ring / no response",busy:"Busy",switched_off:"Switched off"};
 const orders:Record<string,string>={new:"New",pickup_scheduled:"Pickup scheduled",picked_up:"Picked up",inspected:"Inspected",completed:"Completed",cancelled:"Cancelled"};
 export default function AdminWorkspace(){
  const [tab,setTab]=useState("Overview"),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
@@ -26,7 +26,7 @@ export default function AdminWorkspace(){
  async function save(e:FormEvent,entity:string,item:any,setter:(v:any)=>void){e.preventDefault();const body=entity==="variant"?{entity,...item}:{entity,...item,slug:item.slug||slug(item.name),defect_key:item.defect_key||slug(item.label)};const result=await send(item.id?"/api/admin/catalog/"+item.id:"/api/admin/catalog",item.id?"PATCH":"POST",body);if(result)setter(entity==="brand"?{id:"",name:"",slug:"",logo_path:""}:entity==="model"?{id:"",brand_id:"",name:"",slug:"",image_path:"",base_price:""}:entity==="defect"?{id:"",model_id:"",defect_key:"",label:"",deduction_amount:"0"}:{id:"",model_id:"",ram_gb:"8",storage_gb:"128",price_adjustment:"0"})}
  async function remove(entity:string,id:string){if(window.confirm("Delete this catalogue item?"))await send("/api/admin/catalog/"+id+"?entity="+entity,"DELETE")}
  const nav:{label:string;Icon:LucideIcon}[]=[{label:"Overview",Icon:Activity},{label:"Applications",Icon:ClipboardList},{label:"Orders",Icon:PackageCheck},{label:"Customers",Icon:Users},{label:"Phone catalogue",Icon:Smartphone},{label:"Condition deductions",Icon:Settings2},{label:"Activity log",Icon:RefreshCw}];
- const stats=[["Applications",overview.applications?.total||0],["Incomplete",overview.applications?.incomplete||0],["Submitted",overview.applications?.submitted||0],["Orders",overview.orders?.total||0],["Customers",overview.customers?.total||0],...Object.entries(calls).map(([k,v])=>[v,overview.calls?.[k]||0])];
+ const stats=[["Applications",overview.applications?.total||0],["Incomplete",overview.applications?.incomplete||0],["Submitted",overview.applications?.submitted||0],["Orders",overview.orders?.total||0],["Pickups",(overview.orders?.pickup_scheduled||0)+(overview.orders?.picked_up||0)],["Customers",overview.customers?.total||0],...Object.entries(calls).map(([k,v])=>[v,overview.calls?.[k]||0])];
  const input=(label:string,value:string,onChange:(s:string)=>void,type="text")=><label className="admin-field">{label}<input className="field-input" value={value} type={type} onChange={e=>onChange(e.target.value)}/></label>;
  const title=(t:string,d:string)=><div className="dashboard-topbar"><div><div className="eyebrow">NEW TURN / ADMIN</div><h1>{t}</h1><p className="page-subtitle">{d}</p></div><button className="pill" onClick={refresh}><RefreshCw size={14}/> Refresh</button></div>;
  const action=(text:string)=><button className="btn" type="submit" disabled={busy}>{busy?"Saving":text}<Save size={15}/></button>;
