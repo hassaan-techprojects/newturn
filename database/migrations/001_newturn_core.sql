@@ -165,3 +165,18 @@ SELECT m.id,v.ram,v.storage FROM (VALUES
  ('vivo','X200 Pro',16,512),('iQOO','iQOO 13',12,256),('iQOO','iQOO 13',16,512)
 ) AS v(brand,model,ram,storage) JOIN brands b ON b.name=v.brand JOIN phone_models m ON m.brand_id=b.id AND m.name=v.model
 ON CONFLICT(model_id,ram_gb,storage_gb) DO NOTHING;
+
+-- Provisional model-specific deductions (percentage-based starter values).
+-- Replace these per-model amounts with the client's approved deduction workbook.
+INSERT INTO defect_rules(model_id,defect_key,label,deduction_amount)
+SELECT m.id,d.defect_key,d.label,GREATEST(300,ROUND(m.base_price*d.percent))::numeric
+FROM phone_models m CROSS JOIN (VALUES
+ ('screen_damage','Screen damaged',0.08),
+ ('back_glass','Back glass damaged',0.04),
+ ('camera_damage','Camera issue',0.06),
+ ('battery_health','Battery health issue',0.05),
+ ('display_lines','Display lines / spots',0.10),
+ ('charging_issue','Charging port issue',0.03),
+ ('speaker_issue','Speaker / microphone issue',0.02)
+) AS d(defect_key,label,percent)
+ON CONFLICT(model_id,defect_key) DO NOTHING;
