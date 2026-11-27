@@ -55,7 +55,7 @@ export default function HomePage(){
       <div className="hero-device-stage" aria-label="Premium smartphone illustration">
         <div className="device-glow"/>
         <div className="device-back"><div className="camera-island"><i/><i/><i/><i/></div></div>
-        <div className="device-front"><div className="dynamic-island"/><div className="screen-orbit"/><div className="screen-word">SELL<br/>SMARTER.</div></div>
+        <div className="device-front"><div className="dynamic-island"/><div className="screen-orbit"/><img className="newturn-phone-logo" src="/images/brand/newturn-logo.svg" alt="NewTurn logo on phone screen" onError={e=>{e.currentTarget.style.display="none";}}/><div className="screen-word">SELL<br/>SMARTER.</div></div>
         <div className="device-caption"><Sparkles size={15}/> A SIMPLE, CLEAR SELLING EXPERIENCE</div>
       </div>
     </div></section>
