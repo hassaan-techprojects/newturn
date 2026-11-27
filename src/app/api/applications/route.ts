@@ -3,7 +3,7 @@ import {getDb} from "@/lib/db";
 export const runtime="nodejs";
 export async function POST(request:NextRequest){
  const body=await request.json().catch(()=>null);
- if(!body||!body.brand||!body.model||!body.customer_name||!/^\d{10}$/.test(String(body.customer_phone||""))||!/^\d{6}$/.test(String(body.pincode||""))){
+ if(!body||!body.brand||!body.model||!body.customer_name||!/^\d{10}$/.test(String(body.customer_phone||""))||!/^\d{6}$/.test(String(body.pincode||""))||!String(body.area||"").trim()){
   return NextResponse.json({message:"Please complete your phone, contact and pickup details."},{status:400});
  }
  try{
