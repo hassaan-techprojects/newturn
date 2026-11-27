@@ -43,7 +43,7 @@ export default function SignInPage() {
         <label style={{display:"block",fontSize:13,fontWeight:700,marginBottom:7}}>Password</label>
         <input className="search" style={{margin:"0 0 18px",maxWidth:"100%"}} type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Your password"/>
         {error&&<p role="alert" style={{color:"var(--red)",fontSize:13,margin:"0 0 14px"}}>{error}</p>}
-        <button className="btn" disabled={pending} style={{width:"100%",opacity:pending?.65:1}}>{pending?"Signing in…":"Sign in"}</button>
+        <button className="btn" disabled={pending} style={{width:"100%",opacity:pending ? 0.65 : 1}}>{pending?"Signing in…":"Sign in"}</button>
       </form>
       <p style={{fontSize:13,color:"var(--muted)",marginTop:20,textAlign:"center"}}>New to NewTurn? <Link href="/auth/sign-up" style={{color:"var(--red)",fontWeight:700}}>Create an account</Link></p>
     </section>
