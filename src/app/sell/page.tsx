@@ -33,7 +33,9 @@ const modelSlug=(value:string)=>value.toLowerCase().replace(/[^a-z0-9]+/g,"-").r
 
 export default function SellPage() {
   const [step,setStep]=useState<Step>("brand");
-  const [catalogBrands,setCatalogBrands]=useState<{id:string;name:string;slug:string;logo_path?:string}[]>([]);\n  const [selectedBrandId,setSelectedBrandId]=useState("");\n  const [catalogModels,setCatalogModels]=useState<{id:string;brand_id:string;name:string;slug:string;image_path?:string;base_price:number}[]>([]);
+  const [catalogBrands,setCatalogBrands]=useState<{id:string;name:string;slug:string;logo_path?:string}[]>([]);
+  const [selectedBrandId,setSelectedBrandId]=useState("");
+  const [catalogModels,setCatalogModels]=useState<{id:string;brand_id:string;name:string;slug:string;image_path?:string;base_price:number}[]>([]);
   const [catalogVariants,setCatalogVariants]=useState<{id:string;model_id:string;ram_gb:number;storage_gb:number;price_adjustment:number}[]>([]);
   const [selectedModelId,setSelectedModelId]=useState("");
   const [brand,setBrand]=useState(""); const [model,setModel]=useState(""); const [variant,setVariant]=useState("");
