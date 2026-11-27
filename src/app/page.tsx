@@ -11,7 +11,7 @@ export default function HomePage(){
     <header className="container topbar">
       <Link href="/" className="brand">new<span>turn</span></Link>
       <nav className="nav"><a href="#how">How it works</a><a href="#brands">Supported brands</a><a href="#why">Why NewTurn</a></nav>
-      <Link className="btn btn-outline" href="/admin/login">Admin Login</Link>
+      <div style={{display:"flex",gap:10,alignItems:"center"}}><Link href="/auth/sign-in" style={{fontSize:13,fontWeight:700}}>Sign in</Link><Link className="btn" href="/auth/sign-up">Create account</Link><Link className="btn btn-outline" href="/admin/login">Admin Login</Link></div>
     </header>
     <section className="hero">
       <div className="container">
