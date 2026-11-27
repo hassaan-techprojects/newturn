@@ -36,13 +36,29 @@ export default function SellPage() {
   const [brand,setBrand]=useState(""); const [model,setModel]=useState(""); const [variant,setVariant]=useState("");
   const [query,setQuery]=useState(""); const [pincode,setPincode]=useState(""); const [area,setArea]=useState("");
   const [areaResult,setAreaResult]=useState<AreaResult|null>(null); const [checking,setChecking]=useState(false);
-  const [condition,setCondition]=useState("Good"); const [name,setName]=useState(""); const [phone,setPhone]=useState(""); const [email,setEmail]=useState("");\n  const [applicationId,setApplicationId]=useState(""); const [savingApplication,setSavingApplication]=useState(false); const [submission,setSubmission]=useState("");
+  const [condition,setCondition]=useState("Good"); const [name,setName]=useState(""); const [phone,setPhone]=useState(""); const [email,setEmail]=useState("");
+  const [applicationId,setApplicationId]=useState(""); const [savingApplication,setSavingApplication]=useState(false); const [submission,setSubmission]=useState("");
 
   const filteredBrands=useMemo(()=>brands.filter(([name])=>name.toLowerCase().includes(query.toLowerCase())),[query]);
   const filteredModels=(models[brand]??[]).filter(item=>item.toLowerCase().includes(query.toLowerCase()));
   const steps:Step[]=["brand","model","variant","condition","location","details","review"];
   const stepIndex=steps.indexOf(step);
-  async function saveApplication() {\n    setSavingApplication(true); setSubmission("");\n    try {\n      const response=await fetch("/api/applications",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({brand,model,variant,condition,pincode,area,customer_name:name,customer_phone:phone,customer_email:email})});\n      const result=await response.json(); if(!response.ok) throw new Error(result.message||"Could not save your application.");\n      setApplicationId(result.id); setStep("review");\n    } catch(error) { setSubmission(error instanceof Error?error.message:"Could not save your application."); }\n    finally { setSavingApplication(false); }\n  }\n  async function submitSale() {\n    if(!applicationId)return; setSavingApplication(true); setSubmission("");\n    try { const response=await fetch(`/api/applications/${applicationId}/submit`,{method:"POST"}); const result=await response.json(); if(!response.ok) throw new Error(result.message||"Could not submit your request."); setSubmission(`Request submitted. Application: ${result.application_code} · Order: ${result.order_code}`); }\n    catch(error) { setSubmission(error instanceof Error?error.message:"Could not submit your request."); }\n    finally { setSavingApplication(false); }\n  }\n  async function lookupPincode() {
+  async function saveApplication() {
+    setSavingApplication(true); setSubmission("");
+    try {
+      const response=await fetch("/api/applications",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({brand,model,variant,condition,pincode,area,customer_name:name,customer_phone:phone,customer_email:email})});
+      const result=await response.json(); if(!response.ok) throw new Error(result.message||"Could not save your application.");
+      setApplicationId(result.id); setStep("review");
+    } catch(error) { setSubmission(error instanceof Error?error.message:"Could not save your application."); }
+    finally { setSavingApplication(false); }
+  }
+  async function submitSale() {
+    if(!applicationId)return; setSavingApplication(true); setSubmission("");
+    try { const response=await fetch(`/api/applications/${applicationId}/submit`,{method:"POST"}); const result=await response.json(); if(!response.ok) throw new Error(result.message||"Could not submit your request."); setSubmission(`Request submitted. Application: ${result.application_code} · Order: ${result.order_code}`); }
+    catch(error) { setSubmission(error instanceof Error?error.message:"Could not submit your request."); }
+    finally { setSavingApplication(false); }
+  }
+  async function lookupPincode() {
     setChecking(true); setAreaResult(null); setArea("");
     try { const response=await fetch(`/api/location/pincode?pincode=${pincode}`); const result=await response.json() as AreaResult; setAreaResult(result); }
     catch { setAreaResult({ok:false,message:"Pincode lookup failed. Please try again."}); }
