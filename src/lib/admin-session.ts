@@ -4,8 +4,8 @@ export const ADMIN_COOKIE = "newturn_admin_session";
 const SESSION_SECONDS = 60 * 60 * 8;
 
 function signature(payload: string) {
-  const secret = process.env.ADMIN_PASSWORD;
-  if (!secret) throw new Error("ADMIN_PASSWORD is not configured");
+  const secret = process.env.ADMIN_SESSION_SECRET || process.env.NEON_AUTH_COOKIE_SECRET || process.env.ADMIN_PASSWORD;
+  if (!secret) throw new Error("An admin session signing secret is not configured");
   return createHmac("sha256", secret).update(payload).digest("base64url");
 }
 
