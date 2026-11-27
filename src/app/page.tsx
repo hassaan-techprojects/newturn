@@ -62,7 +62,7 @@ export default function HomePage(){
 
     <section className="section brand-section" id="brands"><div className="container">
       <div className="section-head"><div className="eyebrow">POPULAR 5G BRANDS</div><h2>Good phones deserve a good next step.</h2><p>Choose your manufacturer to find eligible 5G models.</p></div>
-      <div className="brand-window"><div className="brand-track">{doubled.map(([name,slug],i)=><div className="brand-chip" key={name+i}><BrandLogo slug={slug} name={name}/><span className="brand-chip-fallback" style={{display:"none"}}>{name.slice(0,1)}</span><span>{name}</span></div>)}</div></div>
+      <div className="brand-window"><div className="brand-track">{doubled.map((brand,i)=><div className="brand-chip" key={`${brand.slug}-${i}`}><BrandLogo slug={brand.slug} name={brand.name}/><span className="brand-chip-fallback" style={{display:"none"}}>{brand.name.slice(0,1)}</span><span>{brand.name}</span></div>)}</div></div>
       <p className="brand-note">Our supported catalogue focuses on genuine 5G smartphones and eligible models.</p>
     </div></section>
 
