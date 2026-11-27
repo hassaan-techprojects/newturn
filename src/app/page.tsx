@@ -12,7 +12,8 @@ const brands = [
 
 
 function BrandLogo({slug,name}:{slug:string;name:string}) {
-  return <img src={`/images/brands/${slug}.svg`} alt={name} loading="lazy"
+  const source=slug.startsWith("/")?slug:`/images/brands/${slug}.svg`;
+  return <img src={source} alt={name} loading="lazy"
     onError={e=>{e.currentTarget.style.display="none";const fallback=e.currentTarget.nextElementSibling as HTMLElement|null;if(fallback)fallback.style.display="grid";}}/>;
 }
 function BrandLockup({footer=false}:{footer?:boolean}) {
