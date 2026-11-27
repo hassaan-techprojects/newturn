@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, Banknote, CheckCircle2, ClipboardCheck, MapPin, Menu, PackageCheck, ShieldCheck, Smartphone, Truck, X, Sparkles, CircleHelp } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const brands = [
   ["Apple","apple"],["Samsung","samsung"],["realme","realme"],["Redmi","redmi"],["Xiaomi","xiaomi"],
   ["OnePlus","oneplus"],["Motorola","motorola"],["POCO","poco"],["OPPO","oppo"],["vivo","vivo"],
   ["iQOO","iqoo"],["Nothing","nothing"],["CMF","cmf"],["ASUS","asus"],["Google","google"]
 ] as const;
-const doubled=[...brands,...brands];
+
 
 function BrandLogo({slug,name}:{slug:string;name:string}) {
   return <img src={`/images/brands/${slug}.svg`} alt={name} loading="lazy"
@@ -24,6 +24,9 @@ function BrandLockup({footer=false}:{footer?:boolean}) {
 
 export default function HomePage(){
   const [menuOpen,setMenuOpen]=useState(false);
+  const [catalogBrands,setCatalogBrands]=useState<{name:string;slug:string;logo_path?:string}[]>(brands.map(([name,slug])=>({name,slug})));
+  useEffect(()=>{fetch("/api/catalog").then(r=>r.ok?r.json():null).then(data=>{if(data?.brands?.length)setCatalogBrands(data.brands.map((b:{name:string;slug:string;logo_path?:string})=>({...b,slug:b.logo_path||b.slug})));}).catch(()=>{});},[]);
+  const doubled=[...catalogBrands,...catalogBrands];
   return <main>
     <header className="site-header"><div className="container header-inner">
       <BrandLockup/>
