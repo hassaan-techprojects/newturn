@@ -14,7 +14,7 @@
   --text:var(--ink);
   --muted:#607876;
   --border:#D5E3E1;
-  --shadow:0 18px 50px rgba(3,47,48,.10);
+  --shadow:0 18px 50px rgba(3,47,48,.10);\n  --black:var(--ink); --charcoal:var(--deep); --gray:var(--muted); --silver:var(--border); --surface-muted:var(--surface-soft); --background:var(--paper);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
