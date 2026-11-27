@@ -12,7 +12,7 @@ const brands = [
 
 
 function BrandLogo({slug,name}:{slug:string;name:string}) {
-  const source=slug.startsWith("/")?slug:`/images/brands/${slug}.svg`;
+  const source=slug.startsWith("/")||slug.startsWith("http")?slug:`/images/brands/${slug}.svg`;
   return <img src={source} alt={name} loading="lazy"
     onError={e=>{e.currentTarget.style.display="none";const fallback=e.currentTarget.nextElementSibling as HTMLElement|null;if(fallback)fallback.style.display="grid";}}/>;
 }
