@@ -227,7 +227,6 @@ button:disabled{cursor:not-allowed;opacity:.48}
 
 
 /* NewTurn visual system — white canvas, ink UI, warm editorial accents */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 :root{
  --ink:#101010;--deep:#0B1A33;--coral:#F58A68;--blush:#F4D6DD;--mauve:#B77EAF;
  --plum:#493852;--slate:#283F5A;--navy:#0B1A33;--white:#FFFFFF;--paper:#FFFFFF;
