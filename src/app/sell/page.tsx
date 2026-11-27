@@ -28,7 +28,7 @@ const models: Record<string,string[]> = {
 };
 type Step = "brand"|"model"|"variant"|"condition"|"location"|"details"|"review";
 type AreaResult = {ok:boolean;serviceable?:boolean;message:string;district?:string;state?:string;areas?:string[]};
-const brandLogo=(slug:string)=>slug.startsWith("/")?slug:`/images/brands/${slug}.svg`;
+const brandLogo=(slug:string)=>slug.startsWith("/")||slug.startsWith("http")?slug:`/images/brands/${slug}.svg`;
 const modelSlug=(value:string)=>value.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
 
 export default function SellPage() {
