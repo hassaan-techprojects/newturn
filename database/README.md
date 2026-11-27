@@ -7,7 +7,7 @@ The application uses the existing Neon project `green-wave-93924097`, production
 From the repository root in PowerShell:
 
 ```powershell
-npx neon@latest auth
+npx neon@latest login
 npx neon@latest connection-string production --project-id green-wave-93924097 --database-name neondb --role-name neondb_owner --psql -- -f database/migrations/001_newturn_core.sql
 ```
 
