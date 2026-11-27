@@ -120,3 +120,31 @@ CREATE INDEX IF NOT EXISTS idx_phone_models_brand ON phone_models(brand_id, is_a
 CREATE INDEX IF NOT EXISTS idx_phone_variants_model ON phone_variants(model_id, is_active);
 
 -- Admin dashboard counts should be derived from applications/orders, not duplicated counters.
+
+
+-- Model-specific condition deductions. Populate from the approved NewTurn pricing workbook.
+-- Amounts are stored in paise; no generic brand-wide deduction is assumed.
+CREATE TABLE IF NOT EXISTS model_condition_deductions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  model_id UUID NOT NULL REFERENCES phone_models(id) ON DELETE CASCADE,
+  issue_key TEXT NOT NULL,
+  issue_label TEXT NOT NULL,
+  deduction_paise BIGINT NOT NULL CHECK (deduction_paise >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  effective_from TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(model_id, issue_key, effective_from)
+);
+
+-- Keep call outcomes separate from the application's lifecycle.
+ALTER TABLE applications
+  ADD COLUMN IF NOT EXISTS call_status TEXT NOT NULL DEFAULT 'new'
+  CHECK (call_status IN ('new','interested','not_interested','no_response','busy','switched_off'));
+
+CREATE INDEX IF NOT EXISTS idx_applications_call_status_created
+  ON applications(call_status, created_at DESC);
+
+COMMENT ON TABLE model_condition_deductions IS
+  'Exact-model condition deductions. Import the approved Excel pricing matrix here; do not invent or reuse generic deductions.';
+COMMENT ON COLUMN applications.status IS
+  'Lifecycle: incomplete, submitted/call outcome, converted or cancelled. See call_status for operator call classification.';
