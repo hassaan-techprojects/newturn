@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth/server";
 
 export default auth.middleware({
   loginUrl: "/",
-  publicRoutes: ["/", "/sell", "/api/auth/*", "/api/health"],
+  publicRoutes: ["/", "/sell", "/admin", "/api/admin/session", "/api/auth/*", "/api/location/*", "/api/health"],
 });
 
 export const config = {
