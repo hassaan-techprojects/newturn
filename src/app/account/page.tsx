@@ -6,6 +6,7 @@ import { SignOutButton } from "./sign-out-button";
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
+  if (!auth) redirect("/");
   const { data, error } = await auth.getSession();
   if (error || !data?.user) redirect("/auth/sign-in");
 
