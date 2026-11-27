@@ -362,7 +362,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 @media(prefers-reduced-motion:reduce){.page-title,.form-card,.brand-grid,.model-grid,.variant-grid,.estimate-panel{animation:none}}
 
 /* NewTurn editorial palette: white canvas, black typography, warm rose and deep navy accents */
-:root{--ink:#101010;--deep:#081433;--teal:#493C62;--aqua:#F58A68;--mist:#B78AAE;--slate:#18305A;--white:#FFFFFF;--paper:#FFFFFF;--surface:#FFFFFF;--surface-soft:#FFF2ED;--text:#101010;--muted:#6B6470;--border:#E9DCE4;--shadow:0 18px 50px rgba(8,20,51,.09)}
+:root{--ink:#101010;--deep:#081433;--teal:#493C62;--aqua:#F58A68;--coral:#F58A68;--blush:#F0D7D0;--mauve:#B78AAE;--mist:#B78AAE;--slate:#18305A;--white:#FFFFFF;--paper:#FFFFFF;--surface:#FFFFFF;--surface-soft:#FFF2ED;--text:#101010;--muted:#6B6470;--border:#E9DCE4;--shadow:0 18px 50px rgba(8,20,51,.09)}
 body{background:#fff;color:#101010}
 .hero{background:radial-gradient(ellipse at 83% 20%,rgba(183,138,174,.20),transparent 34%),linear-gradient(120deg,#fff 0%,#FFF8F5 55%,#F0D7D0 100%)}
 .hero h1 span,.eyebrow,.text-link{color:#493C62}
