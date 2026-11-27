@@ -9,7 +9,7 @@ const brands = [
   ["OnePlus","oneplus"],["Motorola","motorola"],["POCO","poco"],["OPPO","oppo"],["vivo","vivo"],
   ["iQOO","iqoo"],["Nothing","nothing"],["CMF","nothing"],["ASUS","asus"],["Google","google"]
 ];
-const brandIcon = (slug:string) => `https://cdn.simpleicons.org/${slug}/171717`;
+const brandIcon = (slug:string) => `https://cdn.simpleicons.org/${slug}/404040`;
 const doubled = [...brands,...brands];
 
 export default function HomePage(){
