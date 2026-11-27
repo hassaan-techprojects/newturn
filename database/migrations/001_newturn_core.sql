@@ -180,3 +180,32 @@ FROM phone_models m CROSS JOIN (VALUES
  ('speaker_issue','Speaker / microphone issue',0.02)
 ) AS d(defect_key,label,percent)
 ON CONFLICT(model_id,defect_key) DO NOTHING;
+
+-- Additional current-generation 5G models found in the public Dofy catalogue.
+INSERT INTO phone_models(brand_id,name,slug,base_price)
+SELECT b.id,v.name,v.slug,v.price FROM (VALUES
+ ('Apple','iPhone 18 Pro Max','iphone-18-pro-max',125000),('Apple','iPhone 18 Pro','iphone-18-pro',110000),('Apple','iPhone 17 Pro Max','iphone-17-pro-max',105000),('Apple','iPhone 17 Pro','iphone-17-pro',90000),('Apple','iPhone 17','iphone-17',72000),('Apple','iPhone Air','iphone-air',78000),('Apple','iPhone 16e','iphone-16e',48000),
+ ('Samsung','Galaxy S26 Ultra','galaxy-s26-ultra',105000),('Samsung','Galaxy S26+','galaxy-s26-plus',90000),('Samsung','Galaxy S26','galaxy-s26',78000),('Samsung','Galaxy S25 FE','galaxy-s25-fe',48000),('Samsung','Galaxy A57 5G','galaxy-a57-5g',30000),('Samsung','Galaxy A37 5G','galaxy-a37-5g',24000)
+) AS v(brand,name,slug,price) JOIN brands b ON b.name=v.brand
+ON CONFLICT(brand_id,slug) DO NOTHING;
+
+INSERT INTO model_variants(model_id,ram_gb,storage_gb)
+SELECT m.id,v.ram,v.storage FROM (VALUES
+ ('Apple','iPhone 18 Pro Max',12,256),('Apple','iPhone 18 Pro Max',12,512),('Apple','iPhone 18 Pro Max',12,1024),
+ ('Apple','iPhone 18 Pro',12,256),('Apple','iPhone 18 Pro',12,512),
+ ('Apple','iPhone 17 Pro Max',12,256),('Apple','iPhone 17 Pro Max',12,512),('Apple','iPhone 17',8,256),('Apple','iPhone 17',8,512),
+ ('Samsung','Galaxy S26 Ultra',12,256),('Samsung','Galaxy S26 Ultra',12,512),('Samsung','Galaxy S26 Ultra',16,1024),
+ ('Samsung','Galaxy S26+',12,256),('Samsung','Galaxy S26+',12,512),('Samsung','Galaxy S26',12,256),('Samsung','Galaxy S26',12,512),
+ ('Samsung','Galaxy S25 FE',8,128),('Samsung','Galaxy S25 FE',8,256)
+) AS v(brand,model,ram,storage) JOIN brands b ON b.name=v.brand JOIN phone_models m ON m.brand_id=b.id AND m.name=v.model
+ON CONFLICT(model_id,ram_gb,storage_gb) DO NOTHING;
+
+INSERT INTO defect_rules(model_id,defect_key,label,deduction_amount)
+SELECT m.id,d.defect_key,d.label,GREATEST(300,ROUND(m.base_price*d.percent))::numeric
+FROM phone_models m CROSS JOIN (VALUES
+ ('screen_damage','Screen damaged',0.08),('back_glass','Back glass damaged',0.04),
+ ('camera_damage','Camera issue',0.06),('battery_health','Battery health issue',0.05),
+ ('display_lines','Display lines / spots',0.10),('charging_issue','Charging port issue',0.03),
+ ('speaker_issue','Speaker / microphone issue',0.02)
+) AS d(defect_key,label,percent)
+ON CONFLICT(model_id,defect_key) DO NOTHING;
