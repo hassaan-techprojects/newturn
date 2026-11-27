@@ -36,7 +36,9 @@ export default function SellPage() {
   const [catalogBrands,setCatalogBrands]=useState<{id:string;name:string;slug:string;logo_path?:string}[]>([]);
   const [selectedBrandId,setSelectedBrandId]=useState("");
   const [catalogModels,setCatalogModels]=useState<{id:string;brand_id:string;name:string;slug:string;image_path?:string;base_price:number}[]>([]);
-  const [catalogVariants,setCatalogVariants]=useState<{id:string;model_id:string;ram_gb:number;storage_gb:number;price_adjustment:number}[]>([]);\n  const [catalogDefects,setCatalogDefects]=useState<{id:string;model_id:string;defect_key:string;label:string;deduction_amount:number}[]>([]);\n  const [selectedDefects,setSelectedDefects]=useState<string[]>([]);
+  const [catalogVariants,setCatalogVariants]=useState<{id:string;model_id:string;ram_gb:number;storage_gb:number;price_adjustment:number}[]>([]);
+  const [catalogDefects,setCatalogDefects]=useState<{id:string;model_id:string;defect_key:string;label:string;deduction_amount:number}[]>([]);
+  const [selectedDefects,setSelectedDefects]=useState<string[]>([]);
   const [selectedModelId,setSelectedModelId]=useState("");
   const [brand,setBrand]=useState(""); const [model,setModel]=useState(""); const [variant,setVariant]=useState("");
   const [query,setQuery]=useState(""); const [pincode,setPincode]=useState(""); const [area,setArea]=useState("");
@@ -46,7 +48,12 @@ export default function SellPage() {
 
   const filteredBrands=useMemo(()=>catalogBrands.length?catalogBrands.filter(b=>b.name.toLowerCase().includes(query.toLowerCase())).map(b=>[b.name,b.slug] as const):brands.filter(([name])=>name.toLowerCase().includes(query.toLowerCase())),[query,catalogBrands]);
   const filteredModels=(catalogModels.length?catalogModels.filter(m=>m.brand_id===selectedBrandId&&m.name.toLowerCase().includes(query.toLowerCase())).map(m=>m.name):((models[brand]??[]).filter(item=>item.toLowerCase().includes(query.toLowerCase()))));
-  const availableVariants=catalogVariants.filter(v=>v.model_id===selectedModelId);\n  const selectedModelData=catalogModels.find(m=>m.id===selectedModelId);\n  const selectedVariantData=availableVariants.find(v=>`${v.ram_gb} GB / ${v.storage_gb} GB`===variant);\n  const modelDefects=catalogDefects.filter(d=>d.model_id===selectedModelId);\n  const baseEstimate=Number(selectedModelData?.base_price||0)+Number(selectedVariantData?.price_adjustment||0);\n  const deductionTotal=modelDefects.filter(d=>selectedDefects.includes(d.defect_key)).reduce((sum,d)=>sum+Number(d.deduction_amount),0);
+  const availableVariants=catalogVariants.filter(v=>v.model_id===selectedModelId);
+  const selectedModelData=catalogModels.find(m=>m.id===selectedModelId);
+  const selectedVariantData=availableVariants.find(v=>`${v.ram_gb} GB / ${v.storage_gb} GB`===variant);
+  const modelDefects=catalogDefects.filter(d=>d.model_id===selectedModelId);
+  const baseEstimate=Number(selectedModelData?.base_price||0)+Number(selectedVariantData?.price_adjustment||0);
+  const deductionTotal=modelDefects.filter(d=>selectedDefects.includes(d.defect_key)).reduce((sum,d)=>sum+Number(d.deduction_amount),0);
   useEffect(()=>{fetch("/api/catalog").then(r=>r.ok?r.json():null).then(data=>{if(data){setCatalogBrands(data.brands||[]);setCatalogModels(data.models||[]);setCatalogVariants(data.variants||[]);setCatalogDefects(data.defects||[]);}}).catch(()=>{});},[]);
   const steps:Step[]=["brand","model","variant","condition","location","details","review"];
   const stepIndex=steps.indexOf(step);
