@@ -22,7 +22,7 @@ export default function HomePage(){
           <a href="#how" onClick={()=>setMenuOpen(false)}><ClipboardCheck size={16}/> How it works</a>
           <a href="#brands" onClick={()=>setMenuOpen(false)}><Smartphone size={16}/> Brands</a>
           <a href="#why" onClick={()=>setMenuOpen(false)}><ShieldCheck size={16}/> Why NewTurn</a>
-          <Link href="/sell" className="nav-sell" onClick={()=>setMenuOpen(false)}>Sell your phone <ArrowRight size={15}/></Link>
+          <Link href="/admin" className="nav-signin" onClick={()=>setMenuOpen(false)}>Sign in</Link><Link href="/sell" className="nav-sell" onClick={()=>setMenuOpen(false)}>Sell your phone <ArrowRight size={15}/></Link>
         </nav>
         <button className="menu-toggle" aria-label={menuOpen?"Close menu":"Open menu"} onClick={()=>setMenuOpen(!menuOpen)}>{menuOpen?<X/>:<Menu/>}</button>
       </div>
