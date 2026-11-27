@@ -31,7 +31,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .main-nav a { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:650; color:var(--charcoal); }
 .main-nav a:hover { color:var(--black); text-decoration:underline; text-underline-offset:5px; }
 .main-nav .nav-sell { padding:12px 17px; background:var(--black); color:var(--white); border-radius:6px; }
-.main-nav .nav-sell:hover { background:var(--charcoal); text-decoration:none; }
+.main-nav .nav-sell:hover { background:var(--gray); border-color:var(--gray); color:var(--white); text-decoration:none; transform:translateY(-1px); }\n.main-nav .nav-signin { padding:11px 15px; border:1px solid var(--silver); border-radius:6px; color:var(--black); transition:.2s; }\n.main-nav .nav-signin:hover { background:var(--charcoal); border-color:var(--charcoal); color:var(--white); text-decoration:none; }
 .menu-toggle { display:none; border:1px solid var(--silver); background:var(--white); border-radius:7px; padding:8px; color:var(--black); }
 .hero { padding:82px 0 74px; background:linear-gradient(110deg,#F5F5F5 0%,#FFFFFF 62%); overflow:hidden; }
 .hero-layout { display:grid; grid-template-columns:1.05fr .95fr; align-items:center; gap:40px; }
@@ -129,7 +129,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
  .main-nav { display:none; position:absolute; top:65px; left:0; right:0; padding:18px 20px 22px; background:var(--white); border-bottom:1px solid var(--silver); box-shadow:0 16px 30px #0000000c; align-items:stretch; gap:17px; flex-direction:column; }
  .main-nav.is-open { display:flex; }
  .main-nav a { padding:5px 0; }
- .main-nav .nav-sell { justify-content:center; padding:13px; }
+ .main-nav .nav-sell,.main-nav .nav-signin { justify-content:center; padding:13px; }
  .hero { padding:50px 0 42px; }
  .hero-layout { grid-template-columns:1fr; gap:20px; }
  .hero h1 { font-size:44px; letter-spacing:-2.7px; }
