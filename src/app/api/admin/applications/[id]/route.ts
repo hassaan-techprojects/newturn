@@ -18,6 +18,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{id:str
   }
   if(body?.order_status&&orderStatuses.includes(body.order_status)){
    const rows=await sql`UPDATE orders SET order_status=${body.order_status},updated_at=NOW() WHERE id=${id}::uuid RETURNING *`;
+   if(rows[0]) await sql`INSERT INTO application_activity(application_id,order_id,actor_email,action,details) VALUES(${rows[0].application_id}::uuid,${id}::uuid,${process.env.ADMIN_EMAIL||"admin"},'order_status_changed',${JSON.stringify({order_status:body.order_status})}::jsonb)`;
    return NextResponse.json(rows[0]??{});
   }
   return NextResponse.json({message:"Unsupported status"},{status:400});
