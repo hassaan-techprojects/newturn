@@ -17,9 +17,9 @@ function BrandLogo({slug,name}:{slug:string;name:string}) {
     onError={e=>{e.currentTarget.style.display="none";const fallback=e.currentTarget.nextElementSibling as HTMLElement|null;if(fallback)fallback.style.display="grid";}}/>;
 }
 function BrandLockup({footer=false}:{footer?:boolean}) {
-  return <Link href="/" className="brand-lockup" aria-label="NewTurn home">
-    <img className="brand-logo" src="/images/brand/newturn-logo.svg" alt="NewTurn" onError={e=>{e.currentTarget.style.display="none";const f=e.currentTarget.nextElementSibling as HTMLElement|null;if(f)f.style.display="inline-flex";}}/>
-    <span className="brand-fallback" style={{display:"none"}}><Smartphone size={footer?17:20}/><span>SELL YOUR PHONE</span></span>
+  return <Link href="/" className="newturn-wordmark" aria-label="NewTurn home">
+    <span className="newturn-mark"><Smartphone size={footer?20:22} strokeWidth={1.8}/></span>
+    <span className="newturn-wordmark-copy"><strong>NEW TURN</strong><small>SELL YOUR PHONE</small></span>
   </Link>;
 }
 
@@ -32,15 +32,12 @@ export default function HomePage(){
   return <main>
     <header className="site-header"><div className="container header-inner">
       <BrandLockup/>
-      <nav className={`main-nav ${menuOpen?"is-open":""}`}>
-        <a href="#how" onClick={()=>setMenuOpen(false)}><ClipboardCheck size={16}/> How it works</a>
-        <a href="#brands" onClick={()=>setMenuOpen(false)}><Smartphone size={16}/> Brands</a>
-        <a href="#why" onClick={()=>setMenuOpen(false)}><ShieldCheck size={16}/> Why sell with us</a>
-        <a href="#faq" onClick={()=>setMenuOpen(false)}><CircleHelp size={16}/> FAQs</a>
-        <a href="#contact" onClick={()=>setMenuOpen(false)}><MapPin size={16}/> Contact</a>
-        <Link href="/admin" className="nav-signin" onClick={()=>setMenuOpen(false)}>Sign in</Link>
-        <Link href="/sell" className="nav-sell" onClick={()=>setMenuOpen(false)}>Sell your phone <ArrowRight size={15}/></Link>
-      </nav>
+      <nav className={`main-nav ${menuOpen?"is-open":""}`} aria-label="Main navigation">
+        <Link href="/" onClick={()=>setMenuOpen(false)}><Smartphone size={17} strokeWidth={1.8}/> Home</Link>
+        <a href="#brands" onClick={()=>setMenuOpen(false)}><PackageCheck size={17} strokeWidth={1.8}/> Brands</a>
+        <Link href="/sell" className="nav-sell" onClick={()=>setMenuOpen(false)}>Sell <ArrowRight size={15}/></Link>
+        <Link href="/admin" className="nav-account" aria-label="Account" title="Account" onClick={()=>setMenuOpen(false)}><span>Account</span><span className="account-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg></span></Link>
+      </nav>>
       <button className="menu-toggle" aria-label={menuOpen?"Close menu":"Open menu"} onClick={()=>setMenuOpen(!menuOpen)}>{menuOpen?<X/>:<Menu/>}</button>
     </div></header>
 
@@ -94,7 +91,7 @@ export default function HomePage(){
       <div><div className="eyebrow">READY WHEN YOU ARE</div><h2>Let your phone make its next move.</h2><p>Start with your phone model. It only takes a few steps.</p></div>
       <Link href="/sell" className="btn btn-light">Start selling <ArrowRight size={16}/></Link>
     </div></div></section>
-    <nav className="mobile-site-nav" aria-label="Quick navigation"><Link href="/" className="active"><Smartphone size={18}/><span>Home</span></Link><a href="#brands"><PackageCheck size={18}/><span>Brands</span></a><Link href="/sell" className="mobile-sell"><ArrowRight size={20}/><span>Sell</span></Link><a href="#faq"><CircleHelp size={18}/><span>Help</span></a><a href="#contact"><MapPin size={18}/><span>Contact</span></a></nav>
+
     <footer className="footer"><div className="container"><div className="footer-grid"><div className="footer-col footer-brand-col"><BrandLockup footer/><p>A clearer way to sell your pre-loved 5G smartphone. Starting with Bengaluru.</p><p><MapPin size={14}/> Bengaluru, Karnataka, India</p><a href="mailto:support@newturn.in">support@newturn.in</a></div><div className="footer-col"><h4>SELL YOUR PHONE</h4><Link href="/sell">Start selling</Link><a href="#how">How it works</a><a href="#brands">Supported brands</a><a href="#faq">FAQs</a></div><div className="footer-col"><h4>NEW TURN</h4><a href="#why">Why NewTurn</a><a href="#contact">Contact</a><Link href="/admin">Admin sign in</Link></div><div className="footer-col"><h4>LEGAL</h4><Link href="/privacy">Privacy policy</Link><Link href="/terms">Terms & conditions</Link><a href="mailto:support@newturn.in?subject=Data%20request">Data & support requests</a></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} NewTurn. All rights reserved.</span><span>Sample contact details — update before public launch.</span><span>Made for a better next turn.</span></div></div></footer>
   </main>;
 }
