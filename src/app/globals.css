@@ -525,3 +525,9 @@ body{color:#171717;background:#fff}
 .dashboard-mobile-brand{display:flex;align-items:center;gap:9px}
 .dashboard-mobile-brand>strong{font:800 13px var(--font-display);letter-spacing:.7px;color:#171717}
 .dashboard-mobile-brand .dashboard-brand-icon{width:31px;height:31px;flex-basis:31px;border-radius:9px}
+
+.newturn-wordmark{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+.newturn-mark{width:36px;height:36px;display:grid;place-items:center;flex:0 0 36px;border-radius:11px;background:#FFF1E8;color:#F97316;border:1px solid #FED7AA}
+.newturn-wordmark-copy{display:flex;flex-direction:column;gap:2px}
+.newturn-wordmark-copy strong{font:800 14px var(--font-display);letter-spacing:.8px;line-height:1;color:#171717}
+.newturn-wordmark-copy small{font:700 8px var(--font-mono);letter-spacing:1px;color:#A3A3A3}
