@@ -1,150 +1,215 @@
--- NewTurn initial PostgreSQL schema.
--- Review and run against the intended Neon branch only after confirming the project.
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- Canonical schema reference for NewTurn.
+-- Keep this file synchronized with database/migrations/001_newturn_core.sql.
+-- Apply the migration file to the intended Neon branch; do not execute this file blindly.
 
-CREATE TABLE IF NOT EXISTS customers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  customer_code TEXT NOT NULL UNIQUE,
-  full_name TEXT NOT NULL,
-  phone_e164 TEXT NOT NULL UNIQUE,
-  email TEXT,
-  email_verified_at TIMESTAMPTZ,
-  phone_verified_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+-- NewTurn core catalogue, customer applications and operations schema
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS brands (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE,
   slug TEXT NOT NULL UNIQUE,
-  logo_url TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true,
+  logo_path TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
   sort_order INTEGER NOT NULL DEFAULT 0,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS phone_models (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  brand_id UUID NOT NULL REFERENCES brands(id),
+  brand_id UUID NOT NULL REFERENCES brands(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  image_url TEXT,
-  is_5g BOOLEAN NOT NULL DEFAULT false,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  release_year INTEGER,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(brand_id, name),
-  CONSTRAINT phone_models_5g_catalog_only CHECK (is_5g = true)
+  slug TEXT NOT NULL,
+  image_path TEXT,
+  network_type TEXT NOT NULL DEFAULT '5G' CHECK (network_type = '5G'),
+  base_price NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (base_price >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(brand_id, slug)
 );
 
-CREATE TABLE IF NOT EXISTS phone_variants (
+CREATE TABLE IF NOT EXISTS model_variants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   model_id UUID NOT NULL REFERENCES phone_models(id) ON DELETE CASCADE,
   ram_gb INTEGER NOT NULL,
   storage_gb INTEGER NOT NULL,
-  is_active BOOLEAN NOT NULL DEFAULT true,
+  price_adjustment NUMERIC(12,2) NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(model_id, ram_gb, storage_gb)
 );
 
+CREATE TABLE IF NOT EXISTS defect_rules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  model_id UUID NOT NULL REFERENCES phone_models(id) ON DELETE CASCADE,
+  defect_key TEXT NOT NULL,
+  label TEXT NOT NULL,
+  deduction_amount NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (deduction_amount >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(model_id, defect_key)
+);
+
+CREATE TABLE IF NOT EXISTS customers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_code TEXT NOT NULL UNIQUE DEFAULT ('NTC-' || UPPER(SUBSTRING(REPLACE(gen_random_uuid()::TEXT,'-','') FROM 1 FOR 10))),
+  full_name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  email TEXT,
+  pincode TEXT,
+  pickup_area TEXT,
+  district TEXT,
+  state TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS customers_phone_idx ON customers(phone);
+
 CREATE TABLE IF NOT EXISTS applications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  application_code TEXT NOT NULL UNIQUE,
-  customer_id UUID NOT NULL REFERENCES customers(id),
-  model_id UUID NOT NULL REFERENCES phone_models(id),
-  variant_id UUID REFERENCES phone_variants(id),
-  city TEXT NOT NULL DEFAULT 'Bengaluru',
-  pincode CHAR(6),
-  address_text TEXT,
-  status TEXT NOT NULL DEFAULT 'incomplete'
-    CHECK (status IN ('incomplete','interested','not_interested','no_response','busy','switched_off','converted','cancelled')),
-  current_step TEXT NOT NULL DEFAULT 'device',
-  initial_offer_paise BIGINT,
-  final_offer_paise BIGINT,
-  evaluation_answers JSONB NOT NULL DEFAULT '{}'::jsonb,
-  submitted_at TIMESTAMPTZ,
-  last_activity_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  application_code TEXT NOT NULL UNIQUE DEFAULT ('NTA-' || UPPER(SUBSTRING(REPLACE(gen_random_uuid()::TEXT,'-','') FROM 1 FOR 10))),
+  customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
+  brand_id UUID REFERENCES brands(id) ON DELETE SET NULL,
+  model_id UUID REFERENCES phone_models(id) ON DELETE SET NULL,
+  variant_id UUID REFERENCES model_variants(id) ON DELETE SET NULL,
+  brand_name TEXT NOT NULL,
+  model_name TEXT NOT NULL,
+  variant_label TEXT,
+  condition_label TEXT,
+  defects JSONB NOT NULL DEFAULT '[]'::JSONB,
+  evaluation_answers JSONB NOT NULL DEFAULT '{}'::JSONB,
+  estimated_price NUMERIC(12,2) NOT NULL DEFAULT 0,
+  deduction_total NUMERIC(12,2) NOT NULL DEFAULT 0,
+  final_estimate NUMERIC(12,2) NOT NULL DEFAULT 0,
+  pincode TEXT,
+  pickup_area TEXT,
+  customer_name TEXT,
+  customer_phone TEXT,
+  customer_email TEXT,
+  status TEXT NOT NULL DEFAULT 'incomplete' CHECK (status IN ('incomplete','submitted','converted','closed')),
+  call_status TEXT NOT NULL DEFAULT 'pending' CHECK (call_status IN ('pending','interested','not_interested','no_response','busy','switched_off')),
+  source_step TEXT NOT NULL DEFAULT 'review',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS applications_status_idx ON applications(status, created_at DESC);
+CREATE INDEX IF NOT EXISTS applications_call_status_idx ON applications(call_status, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_code TEXT NOT NULL UNIQUE,
-  application_id UUID NOT NULL UNIQUE REFERENCES applications(id),
-  customer_id UUID NOT NULL REFERENCES customers(id),
-  status TEXT NOT NULL DEFAULT 'requested'
-    CHECK (status IN ('requested','pickup_scheduled','picked_up','quality_check','completed','rejected','cancelled')),
-  agreed_price_paise BIGINT NOT NULL,
-  pickup_address TEXT NOT NULL,
-  pickup_pincode CHAR(6) NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  order_code TEXT NOT NULL UNIQUE DEFAULT ('NTO-' || UPPER(SUBSTRING(REPLACE(gen_random_uuid()::TEXT,'-','') FROM 1 FOR 10))),
+  application_id UUID NOT NULL UNIQUE REFERENCES applications(id) ON DELETE RESTRICT,
+  customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
+  order_status TEXT NOT NULL DEFAULT 'new' CHECK (order_status IN ('new','pickup_scheduled','picked_up','inspected','completed','cancelled')),
+  pickup_status TEXT NOT NULL DEFAULT 'pending',
+  final_sale_price NUMERIC(12,2),
+  pickup_date DATE,
+  admin_notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS valuation_rules (
+CREATE TABLE IF NOT EXISTS application_activity (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  model_id UUID NOT NULL REFERENCES phone_models(id),
-  variant_id UUID REFERENCES phone_variants(id),
-  base_price_paise BIGINT NOT NULL CHECK (base_price_paise >= 0),
-  adjustments JSONB NOT NULL DEFAULT '{}'::jsonb,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  effective_from TIMESTAMPTZ NOT NULL DEFAULT now(),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS activity_logs (
-  id BIGSERIAL PRIMARY KEY,
-  actor_type TEXT NOT NULL CHECK (actor_type IN ('admin','customer','system')),
-  actor_id UUID,
-  application_id UUID REFERENCES applications(id),
-  order_id UUID REFERENCES orders(id),
+  application_id UUID REFERENCES applications(id) ON DELETE CASCADE,
+  order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+  actor_email TEXT,
   action TEXT NOT NULL,
-  details JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  details JSONB NOT NULL DEFAULT '{}'::JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS admin_users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'admin' CHECK (role IN ('admin','manager','agent')),
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+CREATE INDEX IF NOT EXISTS application_activity_created_idx ON application_activity(created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_applications_status_created ON applications(status, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_applications_customer ON applications(customer_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_orders_status_created ON orders(status, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_activity_created ON activity_logs(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_phone_models_brand ON phone_models(brand_id, is_active);
-CREATE INDEX IF NOT EXISTS idx_phone_variants_model ON phone_variants(model_id, is_active);
+INSERT INTO brands(name,slug,sort_order) VALUES
+ ('Apple','apple',1),('Samsung','samsung',2),('realme','realme',3),('Redmi','redmi',4),('Xiaomi','xiaomi',5),
+ ('OnePlus','oneplus',6),('Motorola','motorola',7),('POCO','poco',8),('OPPO','oppo',9),('vivo','vivo',10),
+ ('iQOO','iqoo',11),('Nothing','nothing',12),('CMF','cmf',13),('ASUS','asus',14),('Google','google',15)
+ON CONFLICT (slug) DO NOTHING;
 
--- Admin dashboard counts should be derived from applications/orders, not duplicated counters.
+-- Starter catalogue values are provisional and editable in Admin > Phone catalogue.
+INSERT INTO phone_models(brand_id,name,slug,base_price)
+SELECT b.id,v.name,v.slug,v.price FROM (VALUES
+ ('Apple','iPhone 16 Pro Max','iphone-16-pro-max',95000),('Apple','iPhone 16 Pro','iphone-16-pro',82000),('Apple','iPhone 16','iphone-16',62000),('Apple','iPhone 15 Pro Max','iphone-15-pro-max',72000),('Apple','iPhone 15','iphone-15',50000),('Apple','iPhone 14','iphone-14',38000),
+ ('Samsung','Galaxy S25 Ultra','galaxy-s25-ultra',85000),('Samsung','Galaxy S25+','galaxy-s25-plus',68000),('Samsung','Galaxy S25','galaxy-s25',58000),('Samsung','Galaxy S24 Ultra','galaxy-s24-ultra',68000),('Samsung','Galaxy A56 5G','galaxy-a56-5g',25000),
+ ('OnePlus','OnePlus 13','oneplus-13',55000),('OnePlus','OnePlus 13R','oneplus-13r',35000),('OnePlus','OnePlus 12','oneplus-12',42000),('OnePlus','OnePlus Nord 4','oneplus-nord-4',23000),
+ ('Google','Pixel 9 Pro XL','pixel-9-pro-xl',65000),('Google','Pixel 9 Pro','pixel-9-pro',58000),('Google','Pixel 9','pixel-9',45000),('Google','Pixel 8a','pixel-8a',28000),
+ ('Xiaomi','Xiaomi 15 Ultra','xiaomi-15-ultra',75000),('Xiaomi','Xiaomi 15','xiaomi-15',55000),('Xiaomi','Xiaomi 14','xiaomi-14',42000),
+ ('Redmi','Redmi Note 14 Pro+ 5G','redmi-note-14-pro-plus-5g',22000),('Redmi','Redmi Note 14 Pro 5G','redmi-note-14-pro-5g',19000),('Redmi','Redmi Note 13 5G','redmi-note-13-5g',14000),
+ ('realme','realme GT 7 Pro','realme-gt-7-pro',50000),('realme','realme 14 Pro+ 5G','realme-14-pro-plus-5g',28000),('realme','realme 13 Pro 5G','realme-13-pro-5g',21000),
+ ('Motorola','Edge 60 Pro','edge-60-pro',33000),('Motorola','Edge 50 Pro','edge-50-pro',24000),('Motorola','Moto G85 5G','moto-g85-5g',14000),
+ ('POCO','POCO F7','poco-f7',30000),('POCO','POCO X7 Pro','poco-x7-pro',22000),('POCO','POCO X7 5G','poco-x7-5g',17000),
+ ('OPPO','Find X8 Pro','find-x8-pro',72000),('OPPO','Reno 13 Pro 5G','reno-13-pro-5g',38000),('OPPO','Reno 12 5G','reno-12-5g',26000),
+ ('vivo','X200 Pro','x200-pro',72000),('vivo','V50 5G','v50-5g',34000),('vivo','V40 Pro','v40-pro',39000),
+ ('iQOO','iQOO 13','iqoo-13',55000),('iQOO','iQOO Neo 10','iqoo-neo-10',30000),('iQOO','iQOO Z10','iqoo-z10',18000),
+ ('Nothing','Phone (3)','phone-3',50000),('Nothing','Phone (2a) Plus','phone-2a-plus',23000),('Nothing','Phone (2a)','phone-2a',19000),
+ ('CMF','CMF Phone 2 Pro','cmf-phone-2-pro',18000),('CMF','CMF Phone 1','cmf-phone-1',12000),
+ ('ASUS','ROG Phone 9 Pro','rog-phone-9-pro',85000),('ASUS','ROG Phone 8','rog-phone-8',55000)
+) AS v(brand,name,slug,price) JOIN brands b ON b.name=v.brand
+ON CONFLICT(brand_id,slug) DO NOTHING;
 
+-- Available variants are explicit records, not generated options. Add more from the admin panel as needed.
+INSERT INTO model_variants(model_id,ram_gb,storage_gb)
+SELECT m.id,v.ram,v.storage FROM (VALUES
+ ('Apple','iPhone 16 Pro Max',8,256),('Apple','iPhone 16 Pro Max',8,512),('Apple','iPhone 16 Pro Max',8,1024),
+ ('Apple','iPhone 16 Pro',8,128),('Apple','iPhone 16 Pro',8,256),('Apple','iPhone 16 Pro',8,512),
+ ('Apple','iPhone 16',8,128),('Apple','iPhone 16',8,256),('Apple','iPhone 16',8,512),
+ ('Samsung','Galaxy S25 Ultra',12,256),('Samsung','Galaxy S25 Ultra',12,512),('Samsung','Galaxy S25 Ultra',12,1024),
+ ('Samsung','Galaxy S25+',12,256),('Samsung','Galaxy S25+',12,512),('Samsung','Galaxy S25',12,128),('Samsung','Galaxy S25',12,256),
+ ('OnePlus','OnePlus 13',12,256),('OnePlus','OnePlus 13',16,512),('OnePlus','OnePlus 13R',12,256),('OnePlus','OnePlus 13R',16,512),
+ ('Google','Pixel 9 Pro XL',16,256),('Google','Pixel 9 Pro XL',16,512),('Google','Pixel 9 Pro',16,128),('Google','Pixel 9 Pro',16,256),('Google','Pixel 9',12,128),('Google','Pixel 9',12,256),
+ ('Redmi','Redmi Note 14 Pro+ 5G',8,128),('Redmi','Redmi Note 14 Pro+ 5G',8,256),('Redmi','Redmi Note 14 Pro+ 5G',12,256),
+ ('realme','realme GT 7 Pro',12,256),('realme','realme GT 7 Pro',16,512),
+ ('POCO','POCO X7 Pro',8,256),('POCO','POCO X7 Pro',12,256),('POCO','POCO X7 Pro',12,512),
+ ('vivo','X200 Pro',16,512),('iQOO','iQOO 13',12,256),('iQOO','iQOO 13',16,512)
+) AS v(brand,model,ram,storage) JOIN brands b ON b.name=v.brand JOIN phone_models m ON m.brand_id=b.id AND m.name=v.model
+ON CONFLICT(model_id,ram_gb,storage_gb) DO NOTHING;
 
--- Model-specific condition deductions. Populate from the approved NewTurn pricing workbook.
--- Amounts are stored in paise; no generic brand-wide deduction is assumed.
-CREATE TABLE IF NOT EXISTS model_condition_deductions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  model_id UUID NOT NULL REFERENCES phone_models(id) ON DELETE CASCADE,
-  issue_key TEXT NOT NULL,
-  issue_label TEXT NOT NULL,
-  deduction_paise BIGINT NOT NULL CHECK (deduction_paise >= 0),
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  effective_from TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(model_id, issue_key, effective_from)
-);
+-- Provisional model-specific deductions (percentage-based starter values).
+-- Replace these per-model amounts with the client's approved deduction workbook.
+INSERT INTO defect_rules(model_id,defect_key,label,deduction_amount)
+SELECT m.id,d.defect_key,d.label,GREATEST(300,ROUND(m.base_price*d.percent))::numeric
+FROM phone_models m CROSS JOIN (VALUES
+ ('screen_damage','Screen damaged',0.08),
+ ('back_glass','Back glass damaged',0.04),
+ ('camera_damage','Camera issue',0.06),
+ ('battery_health','Battery health issue',0.05),
+ ('display_lines','Display lines / spots',0.10),
+ ('charging_issue','Charging port issue',0.03),
+ ('speaker_issue','Speaker / microphone issue',0.02)
+) AS d(defect_key,label,percent)
+ON CONFLICT(model_id,defect_key) DO NOTHING;
 
--- Keep call outcomes separate from the application's lifecycle.
-ALTER TABLE applications
-  ADD COLUMN IF NOT EXISTS call_status TEXT NOT NULL DEFAULT 'new'
-  CHECK (call_status IN ('new','interested','not_interested','no_response','busy','switched_off'));
+-- Additional current-generation 5G models found in the public Dofy catalogue.
+INSERT INTO phone_models(brand_id,name,slug,base_price)
+SELECT b.id,v.name,v.slug,v.price FROM (VALUES
+ ('Apple','iPhone 18 Pro Max','iphone-18-pro-max',125000),('Apple','iPhone 18 Pro','iphone-18-pro',110000),('Apple','iPhone 17 Pro Max','iphone-17-pro-max',105000),('Apple','iPhone 17 Pro','iphone-17-pro',90000),('Apple','iPhone 17','iphone-17',72000),('Apple','iPhone Air','iphone-air',78000),('Apple','iPhone 16e','iphone-16e',48000),
+ ('Samsung','Galaxy S26 Ultra','galaxy-s26-ultra',105000),('Samsung','Galaxy S26+','galaxy-s26-plus',90000),('Samsung','Galaxy S26','galaxy-s26',78000),('Samsung','Galaxy S25 FE','galaxy-s25-fe',48000),('Samsung','Galaxy A57 5G','galaxy-a57-5g',30000),('Samsung','Galaxy A37 5G','galaxy-a37-5g',24000)
+) AS v(brand,name,slug,price) JOIN brands b ON b.name=v.brand
+ON CONFLICT(brand_id,slug) DO NOTHING;
 
-CREATE INDEX IF NOT EXISTS idx_applications_call_status_created
-  ON applications(call_status, created_at DESC);
+INSERT INTO model_variants(model_id,ram_gb,storage_gb)
+SELECT m.id,v.ram,v.storage FROM (VALUES
+ ('Apple','iPhone 18 Pro Max',12,256),('Apple','iPhone 18 Pro Max',12,512),('Apple','iPhone 18 Pro Max',12,1024),
+ ('Apple','iPhone 18 Pro',12,256),('Apple','iPhone 18 Pro',12,512),
+ ('Apple','iPhone 17 Pro Max',12,256),('Apple','iPhone 17 Pro Max',12,512),('Apple','iPhone 17',8,256),('Apple','iPhone 17',8,512),
+ ('Samsung','Galaxy S26 Ultra',12,256),('Samsung','Galaxy S26 Ultra',12,512),('Samsung','Galaxy S26 Ultra',16,1024),
+ ('Samsung','Galaxy S26+',12,256),('Samsung','Galaxy S26+',12,512),('Samsung','Galaxy S26',12,256),('Samsung','Galaxy S26',12,512),
+ ('Samsung','Galaxy S25 FE',8,128),('Samsung','Galaxy S25 FE',8,256)
+) AS v(brand,model,ram,storage) JOIN brands b ON b.name=v.brand JOIN phone_models m ON m.brand_id=b.id AND m.name=v.model
+ON CONFLICT(model_id,ram_gb,storage_gb) DO NOTHING;
 
-COMMENT ON TABLE model_condition_deductions IS
-  'Exact-model condition deductions. Import the approved Excel pricing matrix here; do not invent or reuse generic deductions.';
-COMMENT ON COLUMN applications.status IS
-  'Lifecycle: incomplete, submitted/call outcome, converted or cancelled. See call_status for operator call classification.';
+INSERT INTO defect_rules(model_id,defect_key,label,deduction_amount)
+SELECT m.id,d.defect_key,d.label,GREATEST(300,ROUND(m.base_price*d.percent))::numeric
+FROM phone_models m CROSS JOIN (VALUES
+ ('screen_damage','Screen damaged',0.08),('back_glass','Back glass damaged',0.04),
+ ('camera_damage','Camera issue',0.06),('battery_health','Battery health issue',0.05),
+ ('display_lines','Display lines / spots',0.10),('charging_issue','Charging port issue',0.03),
+ ('speaker_issue','Speaker / microphone issue',0.02)
+) AS d(defect_key,label,percent)
+ON CONFLICT(model_id,defect_key) DO NOTHING;
