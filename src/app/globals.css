@@ -531,3 +531,6 @@ body{color:#171717;background:#fff}
 .newturn-wordmark-copy{display:flex;flex-direction:column;gap:2px}
 .newturn-wordmark-copy strong{font:800 14px var(--font-display);letter-spacing:.8px;line-height:1;color:#171717}
 .newturn-wordmark-copy small{font:700 8px var(--font-mono);letter-spacing:1px;color:#A3A3A3}
+
+.admin-toggle{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #E7E5E4;border-radius:11px;background:#FFFCFA;color:#44403C;font-size:12px;font-weight:650}
+.admin-toggle input{width:16px;height:16px;accent-color:#F97316}
