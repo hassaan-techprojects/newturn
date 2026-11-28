@@ -27,13 +27,13 @@ export async function POST(request:NextRequest){
   if(body.entity==="brand"){
    const name=String(body.name??"").trim(),slug=String(body.slug??"").trim().toLowerCase();
    if(!name||!slug)return NextResponse.json({message:"Brand name and slug are required"},{status:400});
-   const rows=await sql`INSERT INTO brands(name,slug,logo_path,sort_order) VALUES(${name},${slug},${body.logo_path||null},${Number(body.sort_order)||0}) RETURNING *`;
+   const rows=await sql`INSERT INTO brands(name,slug,logo_path,sort_order,is_active) VALUES(${name},${slug},${body.logo_path||null},${Number(body.sort_order)||0},${body.is_active!==false}) RETURNING *`;
    return NextResponse.json(rows[0],{status:201});
   }
   if(body.entity==="model"){
    const brandId=String(body.brand_id??""),name=String(body.name??"").trim(),slug=String(body.slug??"").trim().toLowerCase();
    if(!brandId||!name||!slug)return NextResponse.json({message:"Brand, model name and slug are required"},{status:400});
-   const rows=await sql`INSERT INTO phone_models(brand_id,name,slug,image_path,base_price) VALUES(${brandId}::uuid,${name},${slug},${body.image_path||null},${Math.max(0,Number(body.base_price)||0)}) RETURNING *`;
+   const rows=await sql`INSERT INTO phone_models(brand_id,name,slug,image_path,base_price,is_active) VALUES(${brandId}::uuid,${name},${slug},${body.image_path||null},${Math.max(0,Number(body.base_price)||0)},${body.is_active!==false}) RETURNING *`;
    return NextResponse.json(rows[0],{status:201});
   }
   if(body.entity==="variant"){
