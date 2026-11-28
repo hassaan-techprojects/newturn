@@ -37,7 +37,7 @@ export default function HomePage(){
         <a href="#brands" onClick={()=>setMenuOpen(false)}><PackageCheck size={17} strokeWidth={1.8}/> Brands</a>
         <Link href="/sell" className="nav-sell" onClick={()=>setMenuOpen(false)}>Sell <ArrowRight size={15}/></Link>
         <Link href="/admin" className="nav-account" aria-label="Account" title="Account" onClick={()=>setMenuOpen(false)}><span>Account</span><span className="account-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg></span></Link>
-      </nav>>
+      </nav>
       <button className="menu-toggle" aria-label={menuOpen?"Close menu":"Open menu"} onClick={()=>setMenuOpen(!menuOpen)}>{menuOpen?<X/>:<Menu/>}</button>
     </div></header>
 
