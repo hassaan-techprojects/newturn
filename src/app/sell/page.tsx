@@ -80,7 +80,7 @@ export default function SellPage() {
   }
   return <main className="container page" id="top">
     <header className="site-header" style={{position:"static",height:64,border:0}}>
-      <div className="header-inner"><Link href="/" className="brand-lockup"><img className="brand-logo" src="/images/brand/newturn-logo.svg" alt="NewTurn" onError={e=>{e.currentTarget.style.display="none";const f=e.currentTarget.nextElementSibling as HTMLElement|null;if(f)f.style.display="inline-flex";}}/><span className="brand-fallback" style={{display:"none"}}><Smartphone size={19}/>SELL YOUR PHONE</span></Link><div style={{display:"flex",alignItems:"center",gap:14}}><Link href="/admin" className="pill">Sign in</Link><span style={{fontSize:12,color:"var(--gray)"}}>5G phone pickup · Bengaluru</span></div></div>
+      <div className="header-inner"><Link href="/" className="brand-lockup newturn-wordmark"><span className="newturn-mark"><Smartphone size={19}/></span><span className="newturn-wordmark-copy"><strong>NEW TURN</strong><small>SELL YOUR PHONE</small></span></Link><div style={{display:"flex",alignItems:"center",gap:14}}><Link href="/admin" className="pill">Sign in</Link><span style={{fontSize:12,color:"var(--gray)"}}>5G phone pickup · Bengaluru</span></div></div>
     </header>
     <div style={{paddingTop:30}}>
       <div className="breadcrumb"><Link href="/">Home</Link>　›　Sell your phone　›　{step==="details"?"Your details":step==="review"?"Review":step==="location"?"Pickup location":step==="condition"?"Phone condition":step}</div>
